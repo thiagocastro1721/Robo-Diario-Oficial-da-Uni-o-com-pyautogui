@@ -61,6 +61,7 @@ def sendEmail(nome, novidade, erro, texto, screenshot_path=None):
         Novidade para {nome}!
         Verifique o screenshot anexo.
         """   
+    
     #Habilite a autenticação em duas etapas
     #Obtenha a senha do aplicativo em https://myaccount.google.com/apppasswords
     senha = 'dqwy mmsz mqos zcvc'  
@@ -86,17 +87,29 @@ def sendEmail(nome, novidade, erro, texto, screenshot_path=None):
     except Exception as e:
         print(f"Erro ao enviar email: {e}")
 
+def obter_caminho_desktop():
+    """
+    Retorna o caminho para a pasta Desktop do usuário atual
+    Funciona para qualquer usuário do sistema
+    """
+    return os.path.join(os.path.expanduser('~'), 'Desktop')
+
 def capturar_screenshot(pasta, prefixo=''):
     """
     Captura screenshot e salva na pasta especificada
     Retorna o caminho do arquivo salvo
     """
     # Cria pasta se não existir
-    os.makedirs(pasta, exist_ok=True)
+    try:
+        os.makedirs(pasta, exist_ok=True)
+        print(f"Pasta garantida: {pasta}")
+    except Exception as e:
+        print(f"Erro ao criar pasta {pasta}: {e}")
+        return None
     
     # Captura screenshot com nome no formato anomesdiahoraminuto
     timestamp = datetime.now().strftime('%Y%m%d%H%M')
-    screenshot_path = f'{pasta}/{prefixo}{timestamp}.png'
+    screenshot_path = os.path.join(pasta, f'{prefixo}{timestamp}.png')
     pyautogui.screenshot(screenshot_path)
     
     print(f"Screenshot salvo em: {screenshot_path}")
@@ -186,7 +199,8 @@ def analizeDOU(nome, favX, favY):
             print(f"Esperado: {quantidade_esperada}")
             
             # Captura screenshot da novidade
-            pasta_novidades = '/home/thiago/Desktop/FUB_2025_novidades'
+            desktop_path = obter_caminho_desktop()
+            pasta_novidades = os.path.join(desktop_path, 'FUB_2025_novidades')
             screenshot_path = capturar_screenshot(pasta_novidades, f'{nome}_')
             
             # Limpa screenshots antigos (mantém últimos 20)
@@ -198,7 +212,8 @@ def analizeDOU(nome, favX, favY):
         print(f"Ocorreu algum Erro para {nome}! Verifique!")
         
         # Captura screenshot do erro
-        pasta_erros = '/home/thiago/Desktop/prints_dos_erros_do_script'
+        desktop_path = obter_caminho_desktop()
+        pasta_erros = os.path.join(desktop_path, 'prints_dos_erros_do_script')
         screenshot_path = capturar_screenshot(pasta_erros, f'{nome}_erro_')
         
         # Limpa screenshots antigos de erro (mantém últimos 10)
