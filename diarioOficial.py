@@ -24,20 +24,22 @@ import re
 
 PESSOAS = {
     'Thiago': {
-        'url': 'https://www.in.gov.br/consulta/-/buscar/dou?q="Thiago+Pereira+de+Castro"&s=todos&exactDate=all&sortType=0',
+        'url': 'https://www.in.gov.br/consulta/-/buscar/dou?q=%22Thiago+Pereira+de+Castro%22&s=todos&exactDate=all&sortType=0',
         'editais_esperados': 3,
-        'resultados_esperados': 9,
+        'resultados_esperados': 8,
         'fav_x': 59,
         'fav_y': 121
     },
     'Italo': {
-        'url': 'https://www.in.gov.br/consulta/-/buscar/dou?q="ITALO+RODRIGO+MOREIRA+BORGES"&s=todos&exactDate=all&sortType=0',
-        'editais_esperados': 3,
+        'url': 'https://www.in.gov.br/consulta/-/buscar/dou?q=%22ITALO+RODRIGO+MOREIRA+BORGES%22&s=todos&exactDate=all&sortType=0',
+        'editais_esperados': 13,
         'resultados_esperados': 13,
         'fav_x': 157,
         'fav_y': 121
     }
 }
+#print(PESSOAS['Thiago']['url'])
+
 
 EDITAL_REFERENCIA = "EDITAL Nº 8 - FUB, DE 19 DE SETEMBRO DE 2025"
 DATA_REFERENCIA = datetime(2025, 9, 19)
@@ -45,14 +47,14 @@ DATA_REFERENCIA = datetime(2025, 9, 19)
 EMAIL_CONFIG = {
     'remetente': 'txhxfx@gmail.com',
     'destinatario': 'txhxfx@gmail.com',
-    'senha': 'mgkm epgu hmlk ecrz'
+    'senha': 'xxxx xxxx xxxx xxxx'
 }
 
 # ============================================================================
 # FUNÇÕES DE CAPTURA WEB
 # ============================================================================
 
-def capturar_html(url, max_tentativas=3):
+def capturar_html(url, max_tentativas=10):
     """Captura o HTML de uma URL com múltiplas tentativas"""
     for tentativa in range(1, max_tentativas + 1):
         try:
@@ -62,7 +64,7 @@ def capturar_html(url, max_tentativas=3):
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
             }
             
-            resposta = requests.get(url, headers=headers, timeout=15)
+            resposta = requests.get(url, headers=headers, timeout=180)
             resposta.raise_for_status()
             
             print(f"  ✓ Sucesso! Status: {resposta.status_code}")
@@ -168,7 +170,8 @@ def analisar_editais_html(html, nome):
     num_resultados = extrair_numero_resultados(html, nome)
     
     # Procura por títulos de editais no JSON
-    padrao_titulo = r'"title":"([^"]*EDITAL[^"]*FUB[^"]*)"'
+    #padrao_titulo = r'"title":"([^"]*EDITAL[^"]*FUB[^"]*)"'
+    padrao_titulo = r'"title":"([^"]*DE \d{1,2} DE [A-ZÇÃÕ]+ DE \d{4}[^"]*)"'
     titulos = re.findall(padrao_titulo, html, re.IGNORECASE)
     
     total_editais = len(titulos)
@@ -236,14 +239,15 @@ def sendEmail(nome, novidade, erro, detalhes='', screenshot_path=None):
     
     if erro == 1:
         assunto = f"Erro no script FUB 25 do {nome}"
-        mensagem = f"Ocorreu um erro ao verificar os editais.\n\nDetalhes:\n{detalhes}"
+        mensagem = f"Ocorreu um erro ao verificar os editais.\n\nDetalhes:\n{detalhes}\n\nAcesse o DOU:\n{PESSOAS[nome]['url']}"
+        
     elif novidade == 0:
         assunto = 'FUB 25 sem novidades'
-        mensagem = f"{nome}, continue acreditando!\nDeus é fiel!\n\n{detalhes}"
+        mensagem = f"{nome}, continue acreditando!\nDeus é fiel!\n\n{detalhes}\n\nAcesse o DOU:\n{PESSOAS[nome]['url']}"
     elif novidade == 1:
         assunto = 'ATENÇÃO! NOVIDADE FUB 25! VEJA O DOU!'
         assunto = f'⚠️ {assunto} ⚠️'
-        mensagem = f"Novidade para {nome}!\n\n{detalhes}\n\nVerifique o screenshot anexo."
+        mensagem = f"Novidade para {nome}!\n\n{detalhes}\n\nAcesse o DOU:\n{PESSOAS[nome]['url']}\n\nVerifique o screenshot anexo."
     
     msg = EmailMessage()
     msg['From'] = cfg['remetente']
@@ -376,6 +380,7 @@ def verificar_pessoa(nome, config):
         if mais_recente['data_obj'] > DATA_REFERENCIA:
             tem_novidade = True
             motivo.append(f"Novo edital mais recente: {mais_recente['data_obj'].strftime('%d/%m/%Y')}")
+            motivo.append(f"Título: {mais_recente['titulo'][:80]}...")
         elif EDITAL_REFERENCIA not in mais_recente['titulo']:
             tem_novidade = True
             motivo.append("Edital de referência não é o mais recente")
@@ -395,9 +400,9 @@ def verificar_pessoa(nome, config):
         limpar_screenshots_antigos(pasta_novidades, 20)
         
         # Envia email
-        detalhes = f"Total de editais: {total} (esperado: {esperado})\n"
+        detalhes = f"Total de títulos com data: {total} (esperado: {esperado})\n"
         if num_resultados is not None:
-            detalhes += f"Resultados no site: {num_resultados} (esperado: {resultados_esperados})\n"
+            detalhes += f"Número de resultados no site: {num_resultados} (esperado: {resultados_esperados})\n"
         detalhes += "\n".join(motivo)
         sendEmail(nome, 1, 0, detalhes, screenshot_path)
         
@@ -408,11 +413,11 @@ def verificar_pessoa(nome, config):
             print(f"      - {num_resultados} resultados no site (conforme esperado)")
         print(f"      - Edital de referência continua o mais recente")
         
-        detalhes = f"Total de editais: {total}\n"
+        detalhes = f"Editais com data: {total}\n"
         if num_resultados is not None:
-            detalhes += f"Resultados no site: {num_resultados}\n"
+            detalhes += f"Número de resultados no site: {num_resultados}\n"
         detalhes += f"Edital mais recente: {EDITAL_REFERENCIA}"
-        sendEmail(nome, 0, 0, detalhes)
+        sendEmail(nome, 0, 0, detalhes,)
 
 # ============================================================================
 # EXECUÇÃO PRINCIPAL
