@@ -23,17 +23,17 @@ import re
 # ============================================================================
 
 PESSOAS = {
-    'Thiago': {
-        'url': 'https://www.in.gov.br/consulta/-/buscar/dou?q=%22Thiago+Pereira+de+Castro%22&s=todos&exactDate=all&sortType=0',
-        'editais_esperados': 3,
-        'resultados_esperados': 8,
+    'Fulano': {
+        'url': 'https://www.in.gov.br/consulta/-/buscar/dou?q=%22FULANO+DE+TALS%22&s=todos&exactDate=all&sortType=0',
+        'numero_de_editais_com_o_padrao_de_data_no_titulo': 3,
+        'numero_de_editais_encontrados_na_pesquisa_do_site': 9,
         'fav_x': 59,
         'fav_y': 121
     },
-    'Italo': {
-        'url': 'https://www.in.gov.br/consulta/-/buscar/dou?q=%22ITALO+RODRIGO+MOREIRA+BORGES%22&s=todos&exactDate=all&sortType=0',
-        'editais_esperados': 13,
-        'resultados_esperados': 13,
+    'Beltrano': {
+        'url': 'https://www.in.gov.br/consulta/-/buscar/dou?q=%22BELTRANO+DE+TALS%22&s=todos&exactDate=all&sortType=0',
+        'numero_de_editais_com_o_padrao_de_data_no_titulo': 5,
+        'numero_de_editais_encontrados_na_pesquisa_do_site': 7,
         'fav_x': 157,
         'fav_y': 121
     }
@@ -45,8 +45,8 @@ EDITAL_REFERENCIA = "EDITAL Nº 8 - FUB, DE 19 DE SETEMBRO DE 2025"
 DATA_REFERENCIA = datetime(2025, 9, 19)
 
 EMAIL_CONFIG = {
-    'remetente': 'txhxfx@gmail.com',
-    'destinatario': 'txhxfx@gmail.com',
+    'remetente': 'email@gmail.com',
+    'destinatario': 'email@gmail.com',
     'senha': 'xxxx xxxx xxxx xxxx'
 }
 
@@ -73,7 +73,7 @@ def capturar_html(url, max_tentativas=10):
         except requests.exceptions.RequestException as e:
             print(f"  ✗ Erro na tentativa {tentativa}: {e}")
             if tentativa < max_tentativas:
-                time.sleep(2)
+                time.sleep(4)
             else:
                 print("  ✗ Todas as tentativas falharam.")
                 return None
@@ -107,7 +107,7 @@ def extrair_numero_resultados(html, nome):
         match = re.search(padrao, html, re.IGNORECASE)
         if match:
             numero = int(match.group(1))
-            print(f"  Número de resultados encontrado: {numero} (padrão {i})")
+            print(f"  Número de resultados encontrados: {numero} (padrão {i})")
             return numero
     
     # Se nenhum padrão funcionou, tenta buscar especificamente pelo nome
@@ -117,7 +117,7 @@ def extrair_numero_resultados(html, nome):
     match = re.search(padrao_com_nome, html, re.IGNORECASE | re.DOTALL)
     if match:
         numero = int(match.group(1))
-        print(f"  Número de resultados encontrado: {numero} (busca por nome)")
+        print(f"  Número de resultados encontrados: {numero} (busca por nome)")
         return numero
     
     # Debug: Mostra trechos do HTML que contêm "resultados para"
@@ -283,23 +283,23 @@ def abrir_navegador_e_capturar(nome, fav_x, fav_y):
     
     # Abrir Firefox
     pyautogui.moveTo(210, 751)
-    time.sleep(2)
+    time.sleep(4)
     pyautogui.click()
-    time.sleep(30)
+    time.sleep(60)
     
     # Nova aba
     pyautogui.hotkey('ctrl', 't')
-    time.sleep(30)
+    time.sleep(60)
     
     # Clica no favorito
     pyautogui.moveTo(fav_x, fav_y)
-    time.sleep(4)
+    time.sleep(8)
     pyautogui.click()
-    time.sleep(30)
+    time.sleep(60)
     
     # Scroll para mostrar conteúdo
     pyautogui.scroll(-5)
-    time.sleep(30)
+    time.sleep(60)
     
     # Captura screenshot
     desktop_path = obter_caminho_desktop()
@@ -307,9 +307,9 @@ def abrir_navegador_e_capturar(nome, fav_x, fav_y):
     screenshot_path = capturar_screenshot(pasta_novidades, f'{nome}_')
     
     # Fecha a aba
-    time.sleep(10)
+    time.sleep(20)
     pyautogui.hotkey('ctrl', 'w')
-    time.sleep(10)
+    time.sleep(20)
     pyautogui.hotkey('ctrl', 'w')
 
     
@@ -348,17 +348,17 @@ def verificar_pessoa(nome, config):
         return
     
     total = resultado['total_editais']
-    esperado = config['editais_esperados']
+    esperado = config['numero_de_editais_com_o_padrao_de_data_no_titulo']
     num_resultados = resultado['num_resultados']
-    resultados_esperados = config['resultados_esperados']
+    numero_de_editais_encontrados_na_pesquisa_do_site = config['numero_de_editais_encontrados_na_pesquisa_do_site']
     mais_recente = resultado['edital_mais_recente']
     
-    print(f"\n  Total de editais encontrados: {total}")
-    print(f"  Total esperado: {esperado}")
+    print(f"\n  Total de editais com data encontrados: {total}")
+    print(f"  Total de editais com data esperados: {esperado}")
     
     if num_resultados is not None:
         print(f"  Número de resultados no site: {num_resultados}")
-        print(f"  Número de resultados esperado: {resultados_esperados}")
+        print(f"  Número de resultados esperados no site : {numero_de_editais_encontrados_na_pesquisa_do_site}")
     
     if mais_recente:
         print(f"  Edital mais recente: {mais_recente['titulo'][:80]}...")
@@ -372,9 +372,9 @@ def verificar_pessoa(nome, config):
         tem_novidade = True
         motivo.append(f"Número de editais mudou: {esperado} → {total}")
     
-    if num_resultados is not None and num_resultados != resultados_esperados:
+    if num_resultados is not None and num_resultados != numero_de_editais_encontrados_na_pesquisa_do_site:
         tem_novidade = True
-        motivo.append(f"Número de resultados no site mudou: {resultados_esperados} → {num_resultados}")
+        motivo.append(f"Número de resultados no site mudou: {numero_de_editais_encontrados_na_pesquisa_do_site} → {num_resultados}")
     
     if mais_recente:
         if mais_recente['data_obj'] > DATA_REFERENCIA:
@@ -402,15 +402,15 @@ def verificar_pessoa(nome, config):
         # Envia email
         detalhes = f"Total de títulos com data: {total} (esperado: {esperado})\n"
         if num_resultados is not None:
-            detalhes += f"Número de resultados no site: {num_resultados} (esperado: {resultados_esperados})\n"
+            detalhes += f"Número de resultados no site: {num_resultados} (esperado: {numero_de_editais_encontrados_na_pesquisa_do_site})\n"
         detalhes += "\n".join(motivo)
         sendEmail(nome, 1, 0, detalhes, screenshot_path)
         
     else:
         print(f"\n  ✓ SEM NOVIDADES")
-        print(f"      - {total} editais encontrados (conforme esperado)")
+        print(f"      - {total} editais com data encontrados (conforme esperado)")
         if num_resultados is not None:
-            print(f"      - {num_resultados} resultados no site (conforme esperado)")
+            print(f"      - {num_resultados} resultados de editais encontrados no site (conforme esperado)")
         print(f"      - Edital de referência continua o mais recente")
         
         detalhes = f"Editais com data: {total}\n"
@@ -433,7 +433,7 @@ if __name__ == "__main__":
         # Verifica cada pessoa
         for nome, config in PESSOAS.items():
             verificar_pessoa(nome, config)
-            time.sleep(5)  # Pausa entre verificações
+            time.sleep(10)  # Pausa entre verificações
         
         print("\n" + "="*80)
         print("VERIFICAÇÃO CONCLUÍDA COM SUCESSO!")
