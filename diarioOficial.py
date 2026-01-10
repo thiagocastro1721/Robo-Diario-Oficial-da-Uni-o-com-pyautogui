@@ -4,7 +4,9 @@ Monitor de Editais DOU - FUB 25
 Versão otimizada que usa requisições HTTP e só abre navegador quando necessário
 
 Configuração do crontab:
+crontab -e
 0 9 * * * DISPLAY=:0 /usr/bin/python3 /home/thiago/Desktop/diarioOficial.py
+0 10 * * * /sbin/shutdown -h now
 """
 
 import requests
