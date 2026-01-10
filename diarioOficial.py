@@ -12,7 +12,10 @@ sudo nano /usr/local/bin/agendar_boot.sh
 #!/bin/bash
 #Agenda o próximo boot para amanhã às 08:00
 #rtcwake -m no -t $(date +%s -d 'tomorrow 08:00')
-rtcwake -m off --date "tomorrow 08:00"
+#rtcwake -m off --date "tomorrow 08:00"
+DATA=$(date -d "tomorrow 08:00" "+%Y-%m-%d %H:%M:%S")
+rtcwake -m off --date "$DATA"
+
 
 
 sudo nano /etc/systemd/system/agendar-boot.service
