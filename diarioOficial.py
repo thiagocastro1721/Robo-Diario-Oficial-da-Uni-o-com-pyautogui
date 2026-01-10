@@ -5,10 +5,18 @@ Versão otimizada que usa requisições HTTP e só abre navegador quando necess�
 
 AGENDAMENTOS DE TAREFAS
 
+AGENDAR PARA LIGAR COMPUTADOR:
+
+sudo rtcwake -m off --date "2026-01-10 08:00"
+sudo rtcwake -m off --date +1d
+
+
+EXECUTAR SCRIPT E AGENDAR DESLIGAMENTO:
 Configuração do crontab para ligar o computador, executar o script e depois desligar computador todos os dias:
 O comando shutdown, para deligar o computador, requer  acesso root.
-A configuração abaixo não solicitará senha ao usuário quando usar o shotdown.
+A configuração abaixo fará com que não seja solicidata a senha ao usuário quando usar o shotdown.
 
+Edite o sudoers:
 sudo visudo
 adicione ao fim do arquivo visudo:
 thiago ALL=(ALL) NOPASSWD: /sbin/shutdown
