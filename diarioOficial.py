@@ -3,7 +3,18 @@
 Monitor de Editais DOU - FUB 25
 Versão otimizada que usa requisições HTTP e só abre navegador quando necessário
 
-Configuração do crontab:
+AGENDAMENTOS DE TAREFAS
+
+Configuração do crontab para ligar o computador, executar o script e depois desligar computador todos os dias:
+O comando shutdown, para deligar o computador, requer  acesso root.
+A configuração abaixo não solicitará senha ao usuário quando usar o shotdown.
+
+sudo visudo
+adicione ao fim do arquivo visudo:
+thiago ALL=(ALL) NOPASSWD: /sbin/shutdown
+
+A configuração a seguir irá executar o script todos os dias as 9h e depois iŕá deligar o computador ás 10h.
+
 crontab -e
 0 9 * * * DISPLAY=:0 /usr/bin/python3 /home/thiago/Desktop/diarioOficial.py
 0 10 * * * /sbin/shutdown -h now
