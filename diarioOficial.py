@@ -7,8 +7,34 @@ AGENDAMENTOS DE TAREFAS
 
 AGENDAR PARA LIGAR COMPUTADOR:
 
+sudo nano /usr/local/bin/agendar_boot.sh
+
+#!/bin/bash
+#Agenda o próximo boot para amanhã às 08:00
+#rtcwake -m no -t $(date +%s -d 'tomorrow 08:00')
+rtcwake -m off --date "tomorrow 08:00"
+
+
+sudo nano /etc/systemd/system/agendar-boot.service
+
+[Unit]
+Description=Agenda boot RTC para o dia seguinte
+DefaultDependencies=no
+Before=poweroff.target reboot.target halt.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/agendar_boot.sh
+
+[Install]
+WantedBy=poweroff.target reboot.target halt.target
+
+
+sudo chmod +x /usr/local/bin/agendar_boot.sh
+
+sudo systemctl enable agendar-boot.service
+sudo systemctl daemon-reload
 sudo rtcwake -m off --date "2026-01-10 08:00"
-sudo rtcwake -m off --date +1d
 
 
 EXECUTAR SCRIPT E AGENDAR DESLIGAMENTO:
