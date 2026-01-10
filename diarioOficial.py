@@ -5,13 +5,14 @@ Versão otimizada que usa requisições HTTP e só abre navegador quando necess�
 
 AGENDAMENTOS DE TAREFAS
 
-AGENDAR PARA LIGAR COMPUTADOR:
-Resumo: 
+RESUMO: 
 1 Agendar o primeiro agendamento manual.
 2 O computador liga na hora programada às 8h.
 3 O script do diário oficial é executado às 9h graças à programação do crontab.
 4 O computador desliga às 10 graças à programação do crontab.
 5 Antes de desligar o serviço agendar-boot.service é ativado executando o script agendar_boot.sh, que por sua vez, agenda o próximo boot.
+
+AGENDAR PARA LIGAR COMPUTADOR:
 
 Crie o script
 sudo nano /usr/local/bin/agendar_boot.sh
