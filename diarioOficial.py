@@ -7,6 +7,7 @@ AGENDAMENTOS DE TAREFAS
 
 AGENDAR PARA LIGAR COMPUTADOR:
 
+Crie o script
 sudo nano /usr/local/bin/agendar_boot.sh
 
 #!/bin/bash
@@ -16,8 +17,7 @@ sudo nano /usr/local/bin/agendar_boot.sh
 DATA=$(date -d "tomorrow 08:00" "+%Y-%m-%d %H:%M:%S")
 rtcwake -m off --date "$DATA"
 
-
-
+Crie o serviço
 sudo nano /etc/systemd/system/agendar-boot.service
 
 [Unit]
@@ -32,11 +32,14 @@ ExecStart=/usr/local/bin/agendar_boot.sh
 [Install]
 WantedBy=poweroff.target reboot.target halt.target
 
-
+Condeda permissão ao script
 sudo chmod +x /usr/local/bin/agendar_boot.sh
 
-sudo systemctl enable agendar-boot.service
+Recarregue e ative os serviços
 sudo systemctl daemon-reload
+sudo systemctl enable agendar-boot.service
+
+Com o comando abaixo desligue e agende a primeiro boot. Os outros boots serão automáticos. Ajuste a data e a hora.
 sudo rtcwake -m off --date "2026-01-10 08:00"
 
 
