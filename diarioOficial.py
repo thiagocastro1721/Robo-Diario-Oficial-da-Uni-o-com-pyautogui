@@ -15,6 +15,7 @@ RESUMO:
 Faça as configurações 1 e 2 na ordem abaixo:
 
 1 EXECUTAR SCRIPT E AGENDAR DESLIGAMENTO:
+
 Configuração do crontab para ligar o computador, executar o script e depois desligar computador todos os dias:
 O comando shutdown, para deligar o computador, requer  acesso root.
 A configuração abaixo fará com que não seja solicidata a senha ao usuário quando usar o shotdown.
