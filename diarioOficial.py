@@ -12,7 +12,26 @@ RESUMO:
 4 O computador desliga às 10h graças à programação do crontab.
 5 Antes de desligar o serviço agendar-boot.service é ativado executando o script agendar_boot.sh, que por sua vez, agenda o próximo boot.
 
-AGENDAR PARA LIGAR COMPUTADOR:
+Faça as configurações 1 e 2 na ordem abaixo:
+
+1 EXECUTAR SCRIPT E AGENDAR DESLIGAMENTO:
+Configuração do crontab para ligar o computador, executar o script e depois desligar computador todos os dias:
+O comando shutdown, para deligar o computador, requer  acesso root.
+A configuração abaixo fará com que não seja solicidata a senha ao usuário quando usar o shotdown.
+
+Edite o sudoers:
+sudo visudo
+adicione ao fim do arquivo visudo:
+thiago ALL=(ALL) NOPASSWD: /sbin/shutdown
+
+A configuração a seguir irá executar o script todos os dias as 9h e depois iŕá deligar o computador ás 10h.
+
+crontab -e
+0 9 * * * DISPLAY=:0 /usr/bin/python3 /home/thiago/Desktop/diarioOficial.py
+0 10 * * * /sbin/shutdown -h now
+
+
+2 AGENDAR PARA LIGAR COMPUTADOR:
 
 Crie o script
 sudo nano /usr/local/bin/agendar_boot.sh
@@ -46,25 +65,8 @@ Recarregue e ative os serviços
 sudo systemctl daemon-reload
 sudo systemctl enable agendar-boot.service
 
-Com o comando abaixo desligue e agende a primeiro boot. Os outros boots serão automáticos. Ajuste a data e a hora.
+Ao executar o comando abaixo o computador irá desligar e agendar o primeiro boot. Os outros boots serão automáticos. Ajuste a data e a hora.
 sudo rtcwake -m off --date "2026-01-10 08:00"
-
-
-EXECUTAR SCRIPT E AGENDAR DESLIGAMENTO:
-Configuração do crontab para ligar o computador, executar o script e depois desligar computador todos os dias:
-O comando shutdown, para deligar o computador, requer  acesso root.
-A configuração abaixo fará com que não seja solicidata a senha ao usuário quando usar o shotdown.
-
-Edite o sudoers:
-sudo visudo
-adicione ao fim do arquivo visudo:
-thiago ALL=(ALL) NOPASSWD: /sbin/shutdown
-
-A configuração a seguir irá executar o script todos os dias as 9h e depois iŕá deligar o computador ás 10h.
-
-crontab -e
-0 9 * * * DISPLAY=:0 /usr/bin/python3 /home/thiago/Desktop/diarioOficial.py
-0 10 * * * /sbin/shutdown -h now
 """
 
 import requests
