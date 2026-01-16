@@ -5,69 +5,167 @@ Versão otimizada que usa requisições HTTP e só abre navegador quando necess�
 
 AGENDAMENTOS DE TAREFAS
 
-RESUMO: 
-1 Agendar o primeiro agendamento manual.
-2 O computador liga na hora programada às 8h.
+DESPOIS QUE TUDO ESTIVER CONFIGURADO O COMPUTADOR DEVE SE COMPORTAR DA SEGUINTE FORMA: 
+1 O usuário fará o primeiro agendamento manual.
+2 O computador liga na hora programada, às 8h50.
 3 O script do diário oficial é executado às 9h graças à programação do crontab.
 4 O computador desliga às 10h graças à programação do crontab.
-5 Antes de desligar o serviço agendar-boot.service é ativado executando o script agendar_boot.sh, que por sua vez, agenda o próximo boot.
+5 Antes de desligar o serviço agendar-boot.service é ativado executando o script agendar_boot.sh,
+que por sua vez, agenda o próximo boot num ciclo infinito.
 
 Faça as configurações 1 e 2 na ordem abaixo:
 
-1 EXECUTAR SCRIPT E AGENDAR DESLIGAMENTO:
+1 CONFIGURAÇÃO PARA EXECUTAR SCRIPT E AGENDAR DESLIGAMENTO:
 
-Configuração do crontab para ligar o computador, executar o script e depois desligar computador todos os dias:
-O comando shutdown, para deligar o computador, requer  acesso root.
+Configuração do crontab para executar o script e depois desligar computador todos os dias:
+O comando shutdown, para deligar o computador, requer  acesso root para o usuário.
 A configuração abaixo fará com que não seja solicidata a senha ao usuário quando usar o shotdown.
 
 Edite o sudoers:
+
 sudo visudo
-adicione ao fim do arquivo visudo:
+
+
+
+Adicione ao fim do arquivo visudo:
+
 thiago ALL=(ALL) NOPASSWD: /sbin/shutdown
 
-A configuração a seguir irá executar o script todos os dias as 9h e depois iŕá deligar o computador ás 10h.
+
+
+A configuração a seguir irá executar o script todos os dias às 9h e depois iŕá deligar o computador ás 10h.
+
+Digite o comando abaixo para editar o arquivo de agendamento:
 
 crontab -e
+
+
+
+Cole no arquivo o texto a seguir:
+
 0 9 * * * DISPLAY=:0 /usr/bin/python3 /home/thiago/Desktop/diarioOficial.py
 0 10 * * * /sbin/shutdown -h now
 
 
 2 AGENDAR PARA LIGAR COMPUTADOR:
 
-Crie o script
+Crie o script:
+
 sudo nano /usr/local/bin/agendar_boot.sh
 
-#!/bin/bash
-#Agenda o próximo boot para amanhã às 08:00
-#rtcwake -m no -t $(date +%s -d 'tomorrow 08:00')
-#rtcwake -m off --date "tomorrow 08:00"
-DATA=$(date -d "tomorrow 08:00" "+%Y-%m-%d %H:%M:%S")
-rtcwake -m off --date "$DATA"
 
-Crie o serviço
+
+Cole no arquivo o texto a seguir:
+
+#!/bin/bash
+
+# Limpa qualquer agendamento anterior
+echo 0 > /sys/class/rtc/rtc0/wakealarm 2>/dev/null || true
+sleep 1
+
+# DEFINA O HORÁRIO EM UTC AQUI
+HORARIO_BOOT_UTC="tomorrow 08:50 UTC"
+
+# Calcula o timestamp UTC
+TIMESTAMP_UTC=$(date -u -d "$HORARIO_BOOT_UTC" +%s)
+
+# Grava no RTC (que espera UTC)
+echo $TIMESTAMP_UTC > /sys/class/rtc/rtc0/wakealarm
+
+# Verifica se gravou
+sleep 1
+VALOR_GRAVADO=$(cat /sys/class/rtc/rtc0/wakealarm 2>/dev/null)
+
+if [ "$VALOR_GRAVADO" = "$TIMESTAMP_UTC" ]; then
+    PROXIMA_DATA_UTC=$(date -u -d @$TIMESTAMP_UTC "+%d/%m/%Y às %H:%M:%S UTC")
+    PROXIMA_DATA_LOCAL=$(date -d @$TIMESTAMP_UTC "+%d/%m/%Y às %H:%M:%S %Z")
+    
+    {
+        echo ""
+        echo "=========================================="
+        echo "  ✓ PRÓXIMO BOOT AGENDADO PARA:"
+        echo "    Horário UTC:   $PROXIMA_DATA_UTC"
+        echo "    Horário Local: $PROXIMA_DATA_LOCAL"
+        echo ""
+        echo "  Timestamp UTC gravado: $TIMESTAMP_UTC"
+        echo "=========================================="
+        echo ""
+    } | tee /dev/console /dev/tty1 2>/dev/null || true
+    
+    logger -t agendar-boot "✓ Próximo boot: $PROXIMA_DATA_UTC (Local: $PROXIMA_DATA_LOCAL)"
+    
+    sleep 2
+    exit 0
+else
+    echo "✗ ERRO: Agendamento não persistiu!"
+    echo "  Esperado: $TIMESTAMP_UTC"
+    echo "  Gravado:  $VALOR_GRAVADO"
+    logger -t agendar-boot "✗ ERRO: Agendamento não persistiu"
+    exit 1
+fi
+# Fim do script
+
+
+
+
+
+
+Crie o serviço:
+
 sudo nano /etc/systemd/system/agendar-boot.service
+
+
+Cole no arquivo o texto a seguir:
 
 [Unit]
 Description=Agenda boot RTC para o dia seguinte
 DefaultDependencies=no
-Before=poweroff.target reboot.target halt.target
-
+Before=shutdown.target
 [Service]
 Type=oneshot
 ExecStart=/usr/local/bin/agendar_boot.sh
-
+StandardOutput=journal+console
+StandardError=journal+console
+TTYPath=/dev/console
 [Install]
-WantedBy=poweroff.target reboot.target halt.target
+WantedBy=halt.target poweroff.target
 
-Condeda permissão ao script
+
+
+
+Conceda permissão ao script:
+
 sudo chmod +x /usr/local/bin/agendar_boot.sh
 
-Recarregue e ative os serviços
+
+
+Recarregue e ative os serviços:
+
 sudo systemctl daemon-reload
 sudo systemctl enable agendar-boot.service
 
-Ao executar o comando abaixo o computador irá desligar e agendar o primeiro boot. Os outros boots serão automáticos. Ajuste a data e a hora.
-sudo rtcwake -m off --date "2026-01-10 08:00"
+
+
+Faça o primeiro agendamento executando o script:
+
+sudo /usr/local/bin/agendar_boot.sh
+
+
+
+Valide o agendamento. Lembre-se de que a data aparecerá em horário local RTC, Relógio de Tempo Real (Real-Time Clock),
+o que está tudo certo, pois para o meu notebook vale o agendamento UTC, Tempo Universal Coordenado (Coordinated Universal Time).
+O script agenda em UTC. Faça testes para saber se irá funcionar na sua máquina também. :)
+Se aparecer a data, então o agendamento foi feito com sucesso.
+Execute o comeando abaixo para validar o agendamento:
+
+date -d @$(sudo cat /sys/class/rtc/rtc0/wakealarm) 2>/dev/null || echo "Nenhum agendamento ativo"
+
+
+
+Desligue o computador:
+
+sudo shutdown -h now
+
 """
 
 import requests
