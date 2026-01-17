@@ -116,7 +116,7 @@ else
     echo "✗ ERRO: Agendamento não persistiu!"
     echo "  Esperado: $TIMESTAMP_UTC"
     echo "  Gravado:  $VALOR_GRAVADO"
-    echo " Horário > 00h em UTC. Ative agendamento literal."
+    echo " Horário > 00h em UTC. Ative agendamento literal. Leia a partir da linha 78 do script."
 
     logger -t agendar-boot "✗ ERRO: Agendamento não persistiu"
     exit 1
