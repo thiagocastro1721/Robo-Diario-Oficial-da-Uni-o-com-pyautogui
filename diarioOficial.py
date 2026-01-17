@@ -146,8 +146,7 @@ Execute o comeando abaixo para validar o agendamento:
 date -d @$(sudo cat /sys/class/rtc/rtc0/wakealarm) 2>/dev/null || echo "Nenhum agendamento ativo"
 
 
-
-Quando oportuno desligue o computador:
+Quando oportuno, desligue o computador:
 
 sudo shutdown -h now
 
