@@ -75,6 +75,7 @@ sleep 1
 # DEFINA O HORÁRIO EM UTC AQUI
 HORARIO_BOOT_UTC="tomorrow 08:45 UTC"
 
+#Ativar agendamento literal.
 #Pode haver erro de agendamento.
 #Caso já seja amanha, ou seja, mais de 00h em UTC, entao use o comando abaixo ajustando a data para o primeiro agendamento
 #e depois retorne ao comando original tomorrow.
@@ -115,6 +116,8 @@ else
     echo "✗ ERRO: Agendamento não persistiu!"
     echo "  Esperado: $TIMESTAMP_UTC"
     echo "  Gravado:  $VALOR_GRAVADO"
+    echo " Horário > 00h em UTC. Ative agendamento literal."
+
     logger -t agendar-boot "✗ ERRO: Agendamento não persistiu"
     exit 1
 fi
