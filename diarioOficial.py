@@ -75,6 +75,12 @@ sleep 1
 # DEFINA O HORÁRIO EM UTC AQUI
 HORARIO_BOOT_UTC="tomorrow 08:45 UTC"
 
+#Pode haver erro de agendamento.
+#Caso já seja amanha, ou seja, mais de 00h em UTC, entao use o comando abaixo ajustando a data para o primeiro agendamento
+#e depois retorne ao comando original tomorrow.
+#HORARIO_BOOT_UTC="2026-01-17 08:45:00 UTC"
+
+
 # Calcula o timestamp UTC
 TIMESTAMP_UTC=$(date -u -d "$HORARIO_BOOT_UTC" +%s)
 
