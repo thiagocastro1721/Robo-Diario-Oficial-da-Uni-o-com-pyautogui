@@ -74,7 +74,7 @@ sleep 1
 # CONFIGURAÇÃO: Defina apenas o horário UTC desejado
 # ============================================
 HORA_UTC=8        # Hora em UTC (0-23)
-MINUTO_UTC=50     # Minuto (0-59)
+MINUTO_UTC=50      # Minuto (0-59)
 
 # ============================================
 # LÓGICA SIMPLES
@@ -92,13 +92,15 @@ UTC_MINUTOS=$(( (HORA_UTC * 60) + MINUTO_UTC ))
 # Se RTC >= UTC, então usa tomorrow
 # Caso contrário, usa today
 if [ $RTC_MINUTOS -ge $UTC_MINUTOS ]; then
-    DIA="tomorrow"
+    # Calcula a data de amanhã no horário LOCAL
+    DATA=$(date -d "tomorrow" +%Y-%m-%d)
 else
-    DIA="today"
+    # Usa hoje
+    DATA=$(date -d "today" +%Y-%m-%d)
 fi
 
-# Monta o horário UTC
-HORARIO_BOOT_UTC="$DIA $(printf '%02d:%02d' $HORA_UTC $MINUTO_UTC) UTC"
+# Monta o horário completo em UTC
+HORARIO_BOOT_UTC="$DATA $(printf '%02d:%02d' $HORA_UTC $MINUTO_UTC) UTC"
 
 # DEBUG
 echo "=========================================="
@@ -106,12 +108,12 @@ echo "DEBUG:"
 echo "  Hora LOCAL atual (RTC): $(printf '%02d:%02d' $HORA_RTC $MINUTO_RTC) = $RTC_MINUTOS minutos"
 echo "  Hora UTC desejada: $(printf '%02d:%02d' $HORA_UTC $MINUTO_UTC) = $UTC_MINUTOS minutos"
 echo "  Regra: $RTC_MINUTOS >= $UTC_MINUTOS? $([ $RTC_MINUTOS -ge $UTC_MINUTOS ] && echo 'SIM (usa tomorrow)' || echo 'NÃO (usa today)')"
-echo "  Decisão: usar '$DIA'"
+echo "  Data calculada: $DATA"
 echo "  String final: $HORARIO_BOOT_UTC"
 echo "=========================================="
 
 # Calcula o timestamp UTC
-TIMESTAMP_UTC=$(date -u -d "$HORARIO_BOOT_UTC" +%s)
+TIMESTAMP_UTC=$(date -d "$HORARIO_BOOT_UTC" +%s)
 
 echo "  Timestamp calculado: $TIMESTAMP_UTC"
 echo "  Data UTC: $(date -u -d @$TIMESTAMP_UTC '+%d/%m/%Y %H:%M:%S UTC')"
