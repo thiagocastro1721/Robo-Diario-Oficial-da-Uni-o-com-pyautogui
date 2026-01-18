@@ -163,14 +163,15 @@ Cole no arquivo o texto a seguir:
 [Unit]
 Description=Agenda boot RTC para o dia seguinte
 DefaultDependencies=no
-Before=poweroff.target reboot.target halt.target
-
+Before=shutdown.target
 [Service]
 Type=oneshot
 ExecStart=/usr/local/bin/agendar_boot.sh
-
+StandardOutput=journal+console
+StandardError=journal+console
+TTYPath=/dev/console
 [Install]
-WantedBy=poweroff.target reboot.target halt.target
+WantedBy=halt.target poweroff.target
 
 #Fim do serviço. Não copie esta linha nem a linha em branco acima.
 
