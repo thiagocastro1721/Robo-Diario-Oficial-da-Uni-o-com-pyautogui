@@ -5,6 +5,10 @@ Versão otimizada que usa requisições HTTP e só abre navegador quando necess�
 
 AGENDAMENTOS DE TAREFAS
 
+Observação:
+Para o meu notebook só funciona se ele estiver ligado na tomada e não desconectar, mesmo que por 1 minuto.
+A tampa deve estar aberta.
+
 DESPOIS QUE TUDO ESTIVER CONFIGURADO O COMPUTADOR DEVE SE COMPORTAR DA SEGUINTE FORMA:
 
 1 O usuário fará o primeiro agendamento manual.
