@@ -24,6 +24,10 @@ Faça as configurações 1 e 2 na ordem abaixo:
 
 1 CONFIGURAÇÃO PARA EXECUTAR SCRIPT DO DOU E DESLIGAR:
 
+Observação: Caso queira que o computador execute o script, aguarde 120 segundos e depois desligue, então descomente quase no final deste 
+script as linhas abaixo dos comentários:
+        #Aguarda 120 segundos (linha 651) e #Desliga o computador (linha 654). Desative o desligamento pelo cron.
+
 Configuração do crontab para executar o script e depois desligar computador todos os dias:
 O comando shutdown e a execução do script de agendamento do próximo boot necessitam de acesso root para o usuário.
 A configuração abaixo fará com que não seja solicidata a senha ao usuário quando o crontab executar
@@ -642,6 +646,12 @@ if __name__ == "__main__":
         print("\n" + "="*80)
         print("VERIFICAÇÃO CONCLUÍDA COM SUCESSO!")
         print("="*80 + "\n")
+        
+        #Aguarda 120 segundos
+        #time.sleep(120)
+
+        #Desliga o computador
+        #subprocess.run(['sudo', '/sbin/shutdown', '-h', 'now'], check=True)
         
     except KeyboardInterrupt:
         print("\n\n✗ Execução interrompida pelo usuário.")
