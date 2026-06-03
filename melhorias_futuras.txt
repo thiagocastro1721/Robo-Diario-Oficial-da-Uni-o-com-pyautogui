@@ -37,3 +37,5 @@ Exemplo:
 "minuto_limite": 0 (certo)
 "minuto_limite": 00 (errado)
 
+[] Não enviar e-mail quando encontar erro para acessar o DOU, apenas registar no log do e-mail final. Somente um e-mail será enviado ao final de todo o processo.
+
