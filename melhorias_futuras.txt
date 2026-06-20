@@ -39,3 +39,8 @@ Exemplo:
 
 [] Não enviar e-mail quando encontar erro para acessar o DOU, apenas registar no log do e-mail final. Somente um e-mail por pessoa será enviado ao final de todo o processo.
 
+[] Ajuste de brilho da tela. Futuramente esta opção será perguntada ao usuário na configuração inicial com integração com o arquivo de configuração .json.
+
+[] Perguntar ao usuário se ele quer que o scrpt execute apenas em dias úteis.
+
+[]
