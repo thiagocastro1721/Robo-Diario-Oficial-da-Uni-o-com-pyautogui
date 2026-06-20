@@ -234,6 +234,15 @@ import socket
 import shutil
 import psutil
 
+#Improviso não oficial
+#Baixar o brilho da tela para zero durante a execução
+#max_brightness da minha máquina é 9
+#cat /sys/class/backlight/acpi_video0/max_brightness
+#subprocess.run(
+#    ['sudo', 'tee', '/sys/class/backlight/acpi_video0/brightness'],
+#    input=b'0'
+#)
+
 # ============================================================================
 # SISTEMA DE LOG EM ARQUIVO (DOU_logs/)
 # ============================================================================
