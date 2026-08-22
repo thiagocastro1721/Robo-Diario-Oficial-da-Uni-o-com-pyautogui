@@ -51,7 +51,7 @@ A configuração a seguir irá executar script do diário oficial às 9h e depoi
 
 Digite o comando abaixo para editar o arquivo de agendamento:
 
-crontab -e
+sudo crontab -e
 
 
 
@@ -236,12 +236,12 @@ import psutil
 
 #Improviso não oficial
 #Baixar o brilho da tela para zero durante a execução
-#max_brightness da minha máquina é 9
+# max_brightness da minha máquina é 9
 #cat /sys/class/backlight/acpi_video0/max_brightness
-#subprocess.run(
-#    ['sudo', 'tee', '/sys/class/backlight/acpi_video0/brightness'],
-#    input=b'0'
-#)
+subprocess.run(
+    ['sudo', 'tee', '/sys/class/backlight/acpi_video0/brightness'],
+    input=b'0'
+)
 
 # ============================================================================
 # SISTEMA DE LOG EM ARQUIVO (DOU_logs/)
@@ -1614,13 +1614,19 @@ def sendEmail(nome, novidade, erro, email_config, cfg_pessoa, url, detalhes=''):
     msg['Subject'] = assunto
     msg.set_content(mensagem)
 
-    try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as email:
-            email.login(cfg['remetente'], cfg['senha'])
-            email.send_message(msg)
-        print(f"  ✓ E-mail enviado para: {', '.join(destinatarios)}")
-    except Exception as e:
-        print(f"  ✗ Erro ao enviar e-mail: {e}")
+    for tentativa in range(1, 4):  # até 3 tentativas
+        try:
+            with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=30) as email:
+                email.login(cfg['remetente'], cfg['senha'])
+                email.send_message(msg)
+            print(f"  ✓ E-mail enviado para: {', '.join(destinatarios)}")
+            break
+        except Exception as e:
+            print(f"  ✗ Tentativa {tentativa}/3 falhou ao enviar e-mail: {e}")
+            if tentativa < 3:
+                time.sleep(5 * tentativa)  # espera crescente: 5s, 10s
+            else:
+                print(f"  ✗ Desisti de enviar e-mail para: {', '.join(destinatarios)}")
 
 # ============================================================================
 # CONFIRMAÇÃO INTERATIVA DE NOVO NORMAL
@@ -1735,7 +1741,7 @@ def _atualizar_config_novo_normal(nome: str, resultado: dict, config: dict) -> N
 # FUNÇÃO PRINCIPAL DE ANÁLISE
 # ============================================================================
 
-def verificar_pessoa(nome: str, config: dict) -> bool:
+def verificar_pessoa(nome: str, config: dict, enviar_email_sem_resultado: bool = False) -> bool:
     """
     Verifica os editais de uma pessoa usando a configuração carregada do JSON.
 
@@ -1861,6 +1867,12 @@ def verificar_pessoa(nome: str, config: dict) -> bool:
         if num_resultados is not None:
             print(f"      - {num_resultados} resultados de editais encontrados no site (conforme esperado)")
         print(f"      - Edital de referência continua o mais recente")
+
+        # ── Envia o e-mail de "sem novidade" já para esta pessoa, se configurado ──
+        if enviar_email_sem_resultado:
+            detalhes = f"Nenhuma novidade detectada no DOU para {nome}."
+            sendEmail(nome, 0, 0, email_cfg, cfg_pessoa, url, detalhes)
+
         return False
 
 
@@ -1934,13 +1946,10 @@ def executar_com_agendamento(config: dict) -> None:
     # ── Modo único (comportamento original) ───────────────────────────────────
     if not multiplas:
         for nome in config['pessoas']:
-            verificar_pessoa(nome, config)
+            # Processa este nome e já envia o e-mail correspondente (se houver),
+            # em vez de acumular e enviar tudo em lote ao final.
+            verificar_pessoa(nome, config, enviar_email_sem_resultado=email_sem_res)
             time.sleep(10)
-
-        if email_sem_res:
-            # No modo único, o "horário limite" não existe formalmente,
-            # então enviamos após a única rodada se o usuário quiser.
-            _enviar_email_sem_resultado(config, rodada=1, hora_limite=0, minuto_limite=0)
 
         print("\n" + "=" * 80)
         print("VERIFICAÇÃO CONCLUÍDA COM SUCESSO!")
