@@ -43,4 +43,12 @@ Exemplo:
 
 [] Perguntar ao usuário se ele quer que o scrpt execute apenas em dias úteis.
 
-[]
+[] Automatizar toda a instalação e fornecer os arquivos e instruções para eventual instalação manual.
+
+[] Garantir que a instalação automática funcione nas principais distros linux detectando o OS.
+
+[] Fazer com que o Monitor Dou seja baixado e configurado automaticamente com um comando linux.
+
+[] Fornecer um aplicativo Linux, um snap talvez.
+
+[] Fornecer um site básico, para que todos os usuários posam monitorar seu nomes, mediante uma inscrição simples.
