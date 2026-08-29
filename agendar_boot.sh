@@ -37,9 +37,22 @@ else
     DATA=$(date -u -d "today" +%Y-%m-%d)
 fi
 
+# ============================================
+# AJUSTE DE FIM DE SEMANA
+# Se o próximo boot cair em sábado, adianta 2 dias (cai na segunda).
+# Se cair em domingo, adianta 1 dia (cai na segunda).
+# ============================================
+DIA_SEMANA_ALVO=$(date -u -d "$DATA" +%u)  # 1=segunda ... 6=sábado, 7=domingo
+if [ "$DIA_SEMANA_ALVO" -eq 6 ]; then
+    DATA=$(date -u -d "$DATA +2 days" +%Y-%m-%d)
+elif [ "$DIA_SEMANA_ALVO" -eq 7 ]; then
+    DATA=$(date -u -d "$DATA +1 day" +%Y-%m-%d)
+fi
+
 # Monta a data/hora alvo e converte para timestamp epoch (sempre UTC real)
 HORARIO_BOOT_UTC="$DATA $(printf '%02d:%02d' $HORA_UTC_AGENDADA $MINUTO_UTC_AGENDADO) UTC"
 TIMESTAMP_UTC=$(date -d "$HORARIO_BOOT_UTC" +%s)
+
 # DEBUG
 #echo "=========================================="
 #echo "DEBUG:"
@@ -59,14 +72,12 @@ TIMESTAMP_UTC=$(date -d "$HORARIO_BOOT_UTC" +%s)
 # ============================================
 sudo rtcwake -m no -a -t "$TIMESTAMP_UTC"
 RC=$?
-
 sleep 1
-VALOR_GRAVADO=$(cat /sys/class/rtc/rtc0/wakealarm 2>/dev/null)
 
+VALOR_GRAVADO=$(cat /sys/class/rtc/rtc0/wakealarm 2>/dev/null)
 if [ $RC -eq 0 ] && [ -n "$VALOR_GRAVADO" ]; then
     PROXIMA_DATA_UTC=$(date -u -d @$TIMESTAMP_UTC "+%d/%m/%Y às %H:%M:%S UTC")
     PROXIMA_DATA_LOCAL=$(date -d @$TIMESTAMP_UTC "+%d/%m/%Y às %H:%M:%S %Z")
-
     {
         echo ""
         echo "=========================================="
@@ -76,9 +87,7 @@ if [ $RC -eq 0 ] && [ -n "$VALOR_GRAVADO" ]; then
         echo "=========================================="
         echo ""
     } | tee /dev/console /dev/tty1 2>/dev/null || true
-
     logger -t agendar-boot "✓ Próximo boot: $PROXIMA_DATA_UTC (Local: $PROXIMA_DATA_LOCAL)"
-
     sleep 2
     exit 0
 else
