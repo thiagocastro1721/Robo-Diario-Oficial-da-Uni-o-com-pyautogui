@@ -54,11 +54,15 @@ Digite o comando abaixo para editar o arquivo de agendamento:
 sudo crontab -e
 
 
+Agendar execução do script de segunda a sexta às 9h.
+Ajuste caso necessário os caminhos.
+Cole no arquivo o texto abaixo.
 
-Cole no arquivo o texto a seguir:
+#Se o SO for Fedora LXQT
+0 9 * * 1-5 DISPLAY=:0 qterminal -e /usr/bin/python3 /home/thiago/Desktop/diarioOficial5.py
 
-0 9 * * * DISPLAY=:0 qterminal -e /usr/bin/python3 /home/thiago/Desktop/diarioOficial5.py
-50 9 * * * sudo /sbin/shutdown -h now
+#Se o SO for Fedora KDE Plasma
+0 9 * * 1-5 DISPLAY=:0 XAUTHORITY=/run/user/1000/$(basename $(find /run/user/1000 -maxdepth 1 -name 'xauth_*' -print -quit)) QT_QPA_PLATFORM=xcb /usr/bin/konsole --hold -e /usr/bin/python3 "/home/thiagocastro/Área de trabalho/diarioOficial5.py"
 
 
 
